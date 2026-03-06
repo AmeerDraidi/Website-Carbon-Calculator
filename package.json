@@ -1,0 +1,23 @@
+{
+  "name": "carbon-audit",
+  "version": "1.0.0",
+  "description": "Website Carbon Footprint Analyzer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "echo 'No build step required'",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@tgwf/co2": "^0.18.0",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.0",
+    "puppeteer": "^21.0.0",
+    "xml2js": "^0.6.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

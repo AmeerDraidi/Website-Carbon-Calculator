@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Carbon Calculator</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Brand Colors - Light Theme */
+            --bg-dark: #F0FDF9;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F9FAFB;
+            
+            --primary-green: #34D399;
+            --primary-green-dim: #10B981;
+            
+            --accent-purple: #8B5CF6;
+            --accent-mint: #D1FAE5;
+            
+            --text-main: #064E3B;
+            --text-muted: #4B5563;
+            --border-color: #D1FAE5;
+            
+            /* Grades */
+            --grade-a-plus: #10B981;
+            --grade-a: #34D399;
+            --grade-b: #2DD4BF;
+            --grade-c: #FBBF24;
+            --grade-d: #FB923C;
+            --grade-e: #EF4444;
+            --grade-f: #DC2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- ANIMATIONS & MOTION --- */
+        @keyframes softFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes pulseSoft {
+            0% { box-shadow: 0 0 0 0 rgba(19, 229, 179, 0.2); }
+            70% { box-shadow: 0 0 0 15px rgba(19, 229, 179, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(19, 229, 179, 0); }
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes textFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-in {
+            animation: fadeSlideIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0; /* Start hidden */
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        /* --- UTILS --- */
+        .hidden { display: none !important; }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; width: 100%; }
+        .text-center { text-align: center; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        
+        /* --- PHASE 1: INPUT --- */
+        #phase-input {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1.2rem;
+            border: 1px solid var(--primary-green);
+            border-radius: 50px;
+            color: var(--primary-green);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            background: rgba(19, 229, 179, 0.1);
+            animation: softFloat 4s ease-in-out infinite;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            background: linear-gradient(135deg, var(--text-main) 0%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 3.5rem;
+            max-width: 580px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .toggle-container {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            background: #E5E7EB;
+            border-radius: 100px;
+            border: none;
+            overflow: hidden;
+            padding: 6px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            color: #6B7280;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-radius: 100px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+            color: #374151;
+        }
+
+        .toggle-btn.active {
+            background: #FFFFFF;
+            color: var(--primary-green-dim);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transform: scale(1);
+            font-weight: 700;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #FFFFFF;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 100px;
+            padding: 0.5rem;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary-green);
+            box-shadow: 0 20px 50px -10px rgba(52, 211, 153, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .search-icon {
+            padding-left: 1.5rem;
+            color: #9CA3AF;
+            display: flex;
+            align-items: center;
+        }
+
+        .url-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            background: transparent;
+        }
+
+        .scan-btn {
+            background: #34D399;
+            color: #064E3B;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+        }
+
+        .scan-btn:hover {
+            background: #10B981;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(52, 211, 153, 0.4);
+        }
+
+        .scan-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .footer-note {
+            margin-top: 4rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-note:hover { opacity: 1; }
+
+        /* --- PHASE 2: PROGRESS --- */
+        #phase-progress {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .progress-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--accent-purple), var(--primary-green));
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+        .spinner-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+        }
+
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .spinner-icon {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            animation: pulseSoft 2s infinite;
+        }
+
+        .progress-status {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .progress-url {
+            color: var(--primary-green);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
+            background: rgba(19, 229, 179, 0.1);
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            display: inline-block;
+            border: 1px solid rgba(19, 229, 179, 0.2);
+        }
+
+        /* Facts Carousel */
+        .facts-container {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(0,0,0,0.03);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+
+        .fact-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary-green);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .fact-text {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            font-weight: 500;
+            max-width: 500px;
+            animation: textFadeIn 0.5s ease-out;
+        }
+
+        .log-box {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-card-hover);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-radius: 6px;
+        }
+        
+        .log-entry:hover {
+            background: rgba(0,0,0,0.05);
+            transform: translateX(4px);
+        }
+
+        .cancel-btn {
+            margin-top: 2rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .cancel-btn:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* --- PHASE 3: RESULTS --- */
+        #phase-results {
+            padding: 4rem 1rem;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .result-header {
+            padding: 2rem 3rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+        }
+
+        .site-domain {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #064E3B;
+            letter-spacing: -0.02em;
+        }
+
+        .green-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            color: #064E3B;
+            background: #34D399;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+        }
+
+        .score-section {
+            padding: 5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        /* Dynamic Background Glow for Score */
+        .score-section::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.1) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .grade-letter {
+            font-size: 10rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        @keyframes scaleIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .grade-label {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: #064E3B;
+            position: relative; z-index: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .cleaner-stat {
+            font-size: 1.2rem;
+            color: #4B5563;
+            position: relative; z-index: 1;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            padding: 2.5rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.02);
+        }
+
+        .stat-box {
+            background: rgba(0,0,0,0.03);
+            padding: 1.5rem 1rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-green);
+        }
+
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.4rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .context-section {
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .context-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            color: var(--primary-green);
+        }
+
+        .context-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .recs-section {
+            padding: 2.5rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.02);
+        }
+
+        .recs-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .rec-list {
+            list-style: none;
+        }
+
+        .rec-item {
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            gap: 1rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            background: rgba(0,0,0,0.03);
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .rec-item:hover {
+            border-color: var(--primary-green);
+            background: rgba(19, 229, 179, 0.05);
+            color: var(--text-main);
+        }
+
+        .rec-item::before {
+            content: "→";
+            color: var(--primary-green);
+            font-weight: bold;
+        }
+
+        .details-section {
+            padding: 1rem 2.5rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.02);
+        }
+
+        details summary {
+            cursor: pointer;
+            color: var(--primary-green);
+            font-weight: 600;
+            padding: 1rem 0;
+            outline: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+        
+        details summary:hover { color: var(--primary-green-dim); }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .details-table th {
+            text-align: left;
+            padding: 1rem;
+            background: rgba(0,0,0,0.05);
+            color: var(--text-main);
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .details-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .details-table tr:last-child td { border-bottom: none; }
+
+        .actions-footer {
+            padding: 2.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.05);
+            color: var(--text-main);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary-green);
+            color: var(--bg-dark);
+            background: var(--primary-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(19, 229, 179, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .hero-title { font-size: 2.8rem; }
+            .grade-letter { font-size: 6rem; }
+        }
+    </style>
+
+</head>
+<body>
+
+    <!-- PHASE 1: INPUT -->
+    <div id="phase-input" class="animate-in">
+        <div class="badge">🌿 Website Carbon Calculator</div>
+        <h1 class="hero-title">How clean is your website?</h1>
+        <p class="hero-subtitle">Enter a URL to measure its digital carbon footprint. Discover how much CO₂ each visit generates and get tips to make it greener.</p>
+
+        <div class="toggle-container">
+            <button class="toggle-btn active" id="btn-single" onclick="setMode('single')">Single Page</button>
+            <button class="toggle-btn" id="btn-full" onclick="setMode('full')">Full Site Scan</button>
+        </div>
+
+        <div class="input-wrapper">
+            <div class="search-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <input type="text" class="url-input" id="urlInput" placeholder="https://example.com" onkeypress="if(event.key === 'Enter') startScan()">
+            <button class="scan-btn" onclick="startScan()">Check URL →</button>
+        </div>
+        <div id="input-error" style="color: #ef4444; margin-top: 1rem; display: none;"></div>
+    </div>
+
+    <!-- PHASE 2: PROGRESS -->
+    <div id="phase-progress" class="hidden">
+        <div class="progress-card animate-in">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="spinner-icon">🌱</div>
+            </div>
+            <h2 class="progress-status" id="statusText">Initializing...</h2>
+            <p class="progress-url" id="currentUrl">Preparing scan...</p>
+            
+            <!-- Dynamic Facts Carousel -->
+            <div class="facts-container">
+                <div class="fact-label">Did you know?</div>
+                <div class="fact-text" id="factText">The internet consumes more electricity than the entire United Kingdom.</div>
+            </div>
+
+            <div class="log-box" id="logContainer">
+                <!-- Log entries -->
+            </div>
+            
+            <button class="cancel-btn" onclick="cancelScan()">Cancel Scan</button>
+        </div>
+    </div>
+
+    <!-- PHASE 3: RESULTS -->
+    <div id="phase-results" class="hidden container">
+        <div class="result-card">
+            
+            <!-- Header -->
+            <div class="result-header">
+                <div class="site-domain" id="resultDomain">example.com</div>
+                <div class="green-badge" id="greenBadge">
+                    <span>✅</span> Green Hosted
+                </div>
+            </div>
+
+            <!-- Score -->
+            <div class="score-section">
+                <div class="grade-letter" id="gradeLetter">A</div>
+                <div class="grade-label" id="gradeLabel">Excellent</div>
+                
+                <div class="cleaner-container" style="max-width: 500px; margin: 1rem auto;">
+                    <div class="cleaner-stat" id="cleanerStat">Cleaner than 82% of web pages tested</div>
+                    <div class="cleaner-bar-bg" style="background: #E5E7EB; height: 12px; border-radius: 99px; margin-top: 1rem; overflow: hidden;">
+                        <div id="cleanerBar" style="width: 0%; height: 100%; background: #FBBF24; transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); border-radius: 99px;"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; font-size: 0.9rem;">
+                    <a href="https://www.websitecarbon.com/introducing-the-website-carbon-rating-system/" target="_blank" style="color: #6B7280; text-decoration: underline; opacity: 0.8; transition: opacity 0.3s;">
+                        About the Rating System
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-val" id="statCo2">0g</div>
+                    <div class="stat-label">CO₂/visit</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statWeight">0 KB</div>
+                    <div class="stat-label">effective transfer</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statPages">0</div>
+                    <div class="stat-label">pages scanned</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-val" id="statAnnual">0 kg</div>
+                    <div class="stat-label">CO₂/year</div>
+                </div>
+            </div>
+
+            <!-- Context -->
+            <div class="context-section">
+                <div class="context-title">🌍 What does this mean?</div>
+                <p class="context-text" id="contextText">
+                    Calculating impact...
+                </p>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="recs-section">
+                <div class="recs-title">💡 Recommendations</div>
+                <ul class="rec-list" id="recList">
+                    <!-- Dynamic recs -->
+                </ul>
+            </div>
+
+            <!-- Details Table -->
+            <div class="details-section">
+                <details>
+                    <summary id="detailsSummary">View all scanned pages ▼</summary>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table class="details-table">
+                            <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>Size</th>
+                                    <th>CO₂</th>
+                                    <th>Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailsBody"></tbody>
+                        </table>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-footer">
+                <button class="action-btn" onclick="downloadCSV()">📄 Download CSV</button>
+                <button class="action-btn" onclick="copySummary()">📋 Copy Summary</button>
+                <button class="action-btn" onclick="resetApp()">🔁 Scan Another Site</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- STATE ---
+        let eventSource = null;
+        let scanMode = 'single'; // 'full' or 'single'
+        let scanResults = [];
+        let scanStats = {};
+        let factInterval = null;
+
+        // --- FACTS ---
+        const sustainabilityFacts = [
+            "The internet consumes more electricity than the entire United Kingdom.",
+            "If the internet were a country, it would be the 6th largest polluter.",
+            "A single email emits about 4g of CO2e.",
+            "Streaming video accounts for 60% of internet traffic.",
+            "Switching to a green host can reduce your site's carbon footprint by up to 90%.",
+            "Dark mode can save battery and reduce energy consumption on OLED screens.",
+            "The average website produces 1.76g of CO2 for every page view.",
+            "Data centers account for about 1% of global electricity demand.",
+            "Optimizing images can reduce page weight by 30-70%, saving energy.",
+            "Lazy loading images prevents unnecessary data transfer for users."
+        ];
+
+        // --- DOM ELEMENTS ---
+        const phases = {
+            input: document.getElementById('phase-input'),
+            progress: document.getElementById('phase-progress'),
+            results: document.getElementById('phase-results')
+        };
+
+        // --- ACTIONS ---
+        function setMode(mode) {
+            scanMode = mode;
+            document.getElementById('btn-single').classList.toggle('active', mode === 'single');
+            document.getElementById('btn-full').classList.toggle('active', mode === 'full');
+        }
+
+        function startScan() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            try {
+                new URL(url);
+            } catch (e) {
+                document.getElementById('input-error').textContent = "Please enter a valid URL (e.g., https://example.com)";
+                document.getElementById('input-error').style.display = "block";
+                return;
+            }
+
+            // Reset UI for new scan
+            document.getElementById('currentUrl').textContent = url;
+
+            // Close previous eventSource if active
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            switchPhase('progress');
+            document.getElementById('logContainer').innerHTML = '';
+            scanResults = [];
+            
+            // Start Fact Rotation
+            startFactRotation();
+
+            // Start SSE
+            eventSource = new EventSource(`/api/scan?url=${encodeURIComponent(url)}&mode=${scanMode}`);
+            
+            eventSource.addEventListener('progress', (e) => {
+                const data = JSON.parse(e.data);
+                document.getElementById('statusText').textContent = data.message;
+            });
+
+            eventSource.addEventListener('page', (e) => {
+                const data = JSON.parse(e.data);
+                scanResults.push(data);
+                
+                document.getElementById('statusText').textContent = `Scanning page ${data.index} of ${data.total}`;
+                document.getElementById('currentUrl').textContent = data.url;
+
+                // Log entry
+                const row = document.createElement('div');
+                row.className = 'log-entry';
+                const statusIcon = data.status === 'ok' ? '✅' : (data.status === 'blocked' ? '🔒' : '❌');
+                const path = new URL(data.url).pathname;
+                const truncatedPath = path.length > 40 ? path.substring(0, 37) + '...' : path;
+                
+                row.innerHTML = `
+                    <span style="font-family:monospace;">${statusIcon} ${truncatedPath}</span>
+                    <span style="font-family:monospace;">
+                        ${data.kb}KB 
+                        ${data.gco2e ? data.gco2e.toFixed(2) + 'g' : ''} 
+                        <span style="font-weight:bold; color:${getGradeColor(data.rating)}">${data.rating || ''}</span>
+                    </span>
+                `;
+                const log = document.getElementById('logContainer');
+                log.prepend(row); // Add to top
+                if (log.children.length > 6) log.lastElementChild.remove(); // Keep last 6
+            });
+
+            eventSource.addEventListener('complete', (e) => {
+                const data = JSON.parse(e.data);
+                scanStats = data.stats;
+                scanResults = data.results;
+                eventSource.close();
+                stopFactRotation();
+                renderResults(url);
+                switchPhase('results');
+            });
+
+            eventSource.addEventListener('error', (e) => {
+                const data = e.data ? JSON.parse(e.data) : { message: "Connection lost" };
+                alert(`Error: ${data.message}`);
+                eventSource.close();
+                stopFactRotation();
+                switchPhase('input');
+            });
+        }
+
+        function cancelScan() {
+            if (eventSource) eventSource.close();
+            stopFactRotation();
+            switchPhase('input');
+        }
+
+        function startFactRotation() {
+            const factEl = document.getElementById('factText');
+            let index = 0;
+            
+            // Initial random fact
+            factEl.textContent = sustainabilityFacts[Math.floor(Math.random() * sustainabilityFacts.length)];
+
+            factInterval = setInterval(() => {
+                // Fade out
+                factEl.style.opacity = '0';
+                factEl.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    // Change text
+                    index = (index + 1) % sustainabilityFacts.length;
+                    factEl.textContent = sustainabilityFacts[index];
+                    
+                    // Fade in
+                    factEl.style.opacity = '1';
+                    factEl.style.transform = 'translateY(0)';
+                }, 500);
+            }, 5000); // Change every 5 seconds
+        }
+
+        function stopFactRotation() {
+            if (factInterval) {
+                clearInterval(factInterval);
+                factInterval = null;
+            }
+        }
+
+        function resetApp() {
+            document.getElementById('urlInput').value = '';
+            switchPhase('input');
+        }
+
+        function switchPhase(phaseName) {
+            Object.values(phases).forEach(el => el.classList.add('hidden'));
+            phases[phaseName].classList.remove('hidden');
+        }
+
+        // --- RENDERING ---
+        function getGradeColor(grade) {
+            // Updated to match Circular Design palette
+            const map = {
+                'A+': '#13E5B3', // Primary Green
+                'A': '#0ED0A7',  // Dim Green
+                'B': '#25D8CF',  // Cyan-ish
+                'C': '#F59E0B',  // Orange (Warning)
+                'D': '#F97316',  // Darker Orange
+                'E': '#EF4444',  // Red
+                'F': '#DC2626'   // Dark Red
+            };
+            return map[grade] || '#CECCCA';
+        }
+
+        function getGradeLabel(grade) {
+            const map = {
+                'A+': 'Exceptional', 'A': 'Excellent', 'B': 'Good',
+                'C': 'Average', 'D': 'Below Average', 'E': 'Poor', 'F': 'Very Poor'
+            };
+            return map[grade] || 'Unknown';
+        }
+
+        function animateValue(id, start, end, duration, suffix = '') {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                
+                // Ease out quart
+                const ease = 1 - Math.pow(1 - progress, 4);
+                
+                const current = start + (end - start) * ease;
+                
+                // Format based on magnitude
+                let valStr;
+                if (Math.abs(current) < 10 && current % 1 !== 0) valStr = current.toFixed(2);
+                else valStr = Math.floor(current).toString();
+                
+                obj.textContent = valStr + suffix;
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.textContent = (Number.isInteger(end) ? end : end.toFixed(2)) + suffix;
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function renderResults(inputUrl) {
+            const domain = new URL(inputUrl).hostname;
+            document.getElementById('resultDomain').textContent = domain;
+            
+            // Green Badge
+            const badge = document.getElementById('greenBadge');
+            if (scanStats.isGreenHost) {
+                badge.innerHTML = '<span>✅</span> Green Hosted';
+                badge.style.color = '#0A051C';
+                badge.style.background = 'var(--primary-green)';
+            } else {
+                badge.innerHTML = '<span>⚠️</span> Standard Hosting';
+                badge.style.color = '#0A051C';
+                badge.style.background = '#F59E0B';
+            }
+
+            // Score
+            const gradeLetter = document.getElementById('gradeLetter');
+            gradeLetter.textContent = scanStats.overallRating;
+            gradeLetter.style.color = getGradeColor(scanStats.overallRating);
+            
+            document.getElementById('gradeLabel').textContent = getGradeLabel(scanStats.overallRating);
+            
+            // Cleaner Than Bar
+            const cleanerPct = Math.round(scanStats.avgCleanerThan * 100);
+            document.getElementById('cleanerStat').textContent = `Cleaner than ${cleanerPct}% of web pages tested`;
+            
+            // Reset bar first to animate
+            const bar = document.getElementById('cleanerBar');
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = `${cleanerPct}%`;
+                // Color code the bar
+                if (cleanerPct > 80) bar.style.background = 'var(--primary-green)';
+                else if (cleanerPct > 50) bar.style.background = 'var(--grade-c)';
+                else bar.style.background = 'var(--grade-e)';
+            }, 100);
+
+            // Stats with Animation
+            animateValue('statCo2', 0, scanStats.avgCo2, 1500, 'g');
+            animateValue('statWeight', 0, scanStats.avgAdjustedKb, 1500, ' KB');
+            animateValue('statPages', 0, scanStats.totalScanned, 1000);
+            animateValue('statAnnual', 0, scanStats.annualKg, 1500, ' kg');
+
+            // Context Text
+            document.getElementById('contextText').innerHTML = `
+                At 10,000 monthly page views, this website produces approximately <strong style="color: var(--primary-green)">${scanStats.annualKg.toFixed(0)} kg</strong> of CO₂ per year — equivalent to driving <strong style="color: var(--primary-green)">${scanStats.kmDriven} km</strong> in a petrol car, or needing <strong style="color: var(--primary-green)">${scanStats.treesNeeded} tree${scanStats.treesNeeded !== 1 ? 's' : ''}</strong> to offset the annual emissions.
+            `;
+
+            // Recommendations
+            const recList = document.getElementById('recList');
+            recList.innerHTML = '';
+            const addRec = (text, priority = 'normal') => {
+                const li = document.createElement('li');
+                li.className = 'rec-item';
+                li.innerHTML = `<span style="color: var(--primary-green)">→</span> ${text}`;
+                if (priority === 'high') li.style.borderLeft = '3px solid var(--grade-e)';
+                recList.appendChild(li);
+            };
+
+            if (!scanStats.isGreenHost) addRec("Switch to a green host — check thegreenwebfoundation.org/directory/", 'high');
+            if (scanStats.maxPageKb > 2048) addRec("Some pages exceed 2MB — reduce image sizes using WebP or AVIF format");
+            if (scanStats.avgAdjustedKb > 500) addRec("Average page weight is high — implement lazy loading and minify CSS/JS");
+            if (scanStats.pctBadRating > 0.30) addRec("Over 30% of pages score D or below — serve assets from a CDN");
+            addRec("Set long-lived cache headers (Cache-Control: max-age) on all static assets");
+            addRec("Audit web fonts — subset them or switch to a system font stack");
+            if (scanStats.totalFound > scanStats.sampled) addRec(`Note: ${scanStats.sampled} of ${scanStats.totalFound} pages were sampled — a full audit may differ`);
+
+            // Details Table
+            document.getElementById('detailsSummary').textContent = `View all ${scanStats.totalScanned} scanned pages ▼`;
+            const tbody = document.getElementById('detailsBody');
+            tbody.innerHTML = '';
+            scanResults.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <a href="${p.url}" target="_blank" style="color: inherit; text-decoration: none; border-bottom: 1px dotted var(--text-muted);">${new URL(p.url).pathname}</a>
+                    </td>
+                    <td>${p.kb} KB</td>
+                    <td>${p.gco2e ? p.gco2e.toFixed(2) : '-'}g</td>
+                    <td style="font-weight: bold; color: ${getGradeColor(p.rating)}">${p.rating || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- EXPORT ---
+        function downloadCSV() {
+            const headers = ['URL', 'Transfer Bytes', 'KB', 'CO2 (g)', 'Rating', 'Cleaner Than %', 'Green Host', 'Status'];
+            const rows = scanResults.map(p => [
+                p.url,
+                p.bytes,
+                p.kb,
+                p.gco2e || 0,
+                p.rating || '',
+                (p.cleanerThan || 0) * 100,
+                p.green ? 'Yes' : 'No',
+                p.status
+            ]);
+            
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "carbon_audit_results.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function copySummary() {
+            const text = `Carbon Audit for ${document.getElementById('resultDomain').textContent}:
+Grade: ${scanStats.overallRating}
+Avg CO2: ${scanStats.avgCo2.toFixed(2)}g/view
+Avg Size: ${scanStats.avgAdjustedKb.toFixed(0)}KB
+Green Hosting: ${scanStats.isGreenHost ? 'Yes' : 'No'}
+Annual Impact: ${scanStats.annualKg.toFixed(0)}kg CO2 (at 10k views/mo)`;
+            
+            navigator.clipboard.writeText(text).then(() => alert('Summary copied to clipboard!'));
+        }
+    </script>
+</body>
+</html>
