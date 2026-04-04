@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Website Carbon Calculator</title>
     
+    <!-- Suppress harmless external fetch polyfill errors -->
+    <script>
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('Cannot set property fetch')) {
+                e.preventDefault(); // Prevent it from showing as an Uncaught Error
+            }
+        });
+    </script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
